@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>AnnaSuraksha — Register Beneficiary</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+</head>
+<body class="app-body">
+<th:block th:replace="~{fragments/nav :: nav}"/>
+<th:block th:replace="~{fragments/nav :: tabs('register')}"/>
+<div class="page-wrap">
+  <div class="form-card">
+    <h2 class="form-title">➕ Register New Beneficiary</h2>
+    <p class="form-sub">Aadhaar is SHA-256 hashed before storage — raw number never persisted.</p>
+
+    <form action="/register" method="post" class="reg-form">
+      <div class="field">
+        <label>Aadhaar Number <span class="req">*</span></label>
+        <input name="aadhaar" type="text" placeholder="XXXX XXXX XXXX"
+               pattern="[0-9 ]{12,14}" required autofocus/>
+        <span class="field-hint">Will be SHA-256 hashed immediately</span>
+      </div>
+      <div class="field">
+        <label>Full Name <span class="req">*</span></label>
+        <input name="name" type="text" placeholder="Ramesh Kumar" required/>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>State <span class="req">*</span></label>
+          <select name="state" required>
+            <option value="">Select state</option>
+            <option th:each="s : ${states}" th:value="${s}" th:text="${s}">UP</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Category <span class="req">*</span></label>
+          <select name="category" required>
+            <option th:each="c : ${categories}"
+                    th:value="${c.code}"
+                    th:text="${c.code + ' — ' + c.label}">
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Family Size <span class="req">*</span></label>
+          <input name="familySize" type="number" min="1" max="20" value="4" required/>
+        </div>
+        <div class="field">
+          <label>Phone (optional)</label>
+          <input name="phone" type="tel" placeholder="+91 98765 43210"/>
+        </div>
+      </div>
+      <div class="field-checkbox">
+        <input name="migrant" id="migrant" type="checkbox" value="true"/>
+        <label for="migrant">🚂 ONORC Migrant (One Nation One Ration Card)</label>
+      </div>
+      <button type="submit" class="btn-primary btn-full btn-lg">
+        ⛓️ Mine Block &amp; Register
+      </button>
+    </form>
+
+    <div class="reg-info-box">
+      <div class="rib-title">ℹ️ How it works</div>
+      <div class="rib-row"><span>1.</span><span>Aadhaar is hashed (SHA-256) before any storage</span></div>
+      <div class="rib-row"><span>2.</span><span>Duplicate Aadhaar hash → auto-flagged as GHOST</span></div>
+      <div class="rib-row"><span>3.</span><span>Block hash = SHA-256(prevHash + aadhaarHash + name + state)</span></div>
+      <div class="rib-row"><span>4.</span><span>Entitlement calculated by category × family size</span></div>
+      <div class="rib-row"><span>5.</span><span>FPS shop assigned automatically</span></div>
+    </div>
+  </div>
+</div>
+<th:block th:replace="~{fragments/nav :: footer}"/>
+</body>
+</html>

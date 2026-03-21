@@ -1,0 +1,297 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>FPS Dealer Dashboard — AnnaSuraksha</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="app-body">
+    <th:block th:replace="~{fragments/nav :: nav}" />
+    <th:block th:replace="~{fragments/nav :: tabs('fps')}" />
+
+    <div th:if="${success}" class="alert alert-ok" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-err" th:text="${error}"></div>
+    <div th:if="${warn}" class="alert alert-warn" th:text="${warn}"></div>
+    <div
+      th:if="${fpsError}"
+      class="alert alert-err"
+      th:text="${fpsError}"
+    ></div>
+
+    <div class="page-wrap">
+      <!-- ── Stat cards ── -->
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="sc-icon">🏪</div>
+          <div class="sc-val" th:text="${totalCount}">0</div>
+          <div class="sc-label">Total Distributions</div>
+        </div>
+        <div class="stat-card stat-bad">
+          <div class="sc-icon">⚠️</div>
+          <div class="sc-val red" th:text="${flaggedCount}">0</div>
+          <div class="sc-label">Flagged (Mismatch)</div>
+        </div>
+        <div class="stat-card stat-warn">
+          <div class="sc-icon">⏳</div>
+          <div class="sc-val yellow" th:text="${pendingCount}">0</div>
+          <div class="sc-label">Awaiting Confirmation</div>
+        </div>
+        <div class="stat-card stat-ok">
+          <div class="sc-icon">✅</div>
+          <div class="sc-val green" th:text="${cleanCount}">0</div>
+          <div class="sc-label">Confirmed Clean</div>
+        </div>
+      </div>
+
+      <!-- ── Select beneficiary to record distribution ── -->
+      <section class="section-card">
+        <div class="sc-title">📦 Record New FPS Distribution</div>
+        <p class="fps-desc">
+          Select a beneficiary by their ID to record a distribution. The
+          beneficiary will be prompted to confirm receipt within 48 hours.
+        </p>
+        <form action="/fps/select" method="get" class="fps-select-form">
+          <div class="field-row" style="align-items: flex-end">
+            <div class="field">
+              <label>Beneficiary ID</label>
+              <input
+                name="beneficiaryId"
+                type="number"
+                min="1"
+                placeholder="Enter beneficiary ID (e.g. 1, 2, 3…)"
+                required
+                th:value="${selectedBeneficiaryId}"
+              />
+            </div>
+            <button type="submit" class="btn-primary" style="margin-bottom: 0">
+              🔍 Load Beneficiary
+            </button>
+          </div>
+        </form>
+
+        <!-- Pre-loaded beneficiary form -->
+        <div th:if="${selectedBeneficiary != null}" class="fps-bene-card">
+          <div class="fps-bene-header">
+            <strong th:text="${selectedBeneficiary.fullName}">Name</strong>
+            <span
+              class="status-active"
+              th:text="${selectedBeneficiary.category}"
+              >BPL</span
+            >
+            <span class="mono" th:text="${selectedBeneficiary.fpsShopId}"
+              >FPS-UP-001</span
+            >
+            <span th:text="${'Family of ' + selectedBeneficiary.familySize}"
+              >Family of 4</span
+            >
+          </div>
+          <div class="fps-entitlement">
+            <span
+              >Entitled: 🌾
+              <strong th:text="${selectedBeneficiary.riceKg + ' kg rice'}"
+                >0 kg</strong
+              ></span
+            >
+            <span
+              >🌾
+              <strong th:text="${selectedBeneficiary.wheatKg + ' kg wheat'}"
+                >0 kg</strong
+              ></span
+            >
+            <span
+              >🍬
+              <strong th:text="${selectedBeneficiary.sugarKg + ' kg sugar'}"
+                >0 kg</strong
+              ></span
+            >
+          </div>
+          <form
+            th:action="'/fps/distribute/' + ${selectedBeneficiary.id}"
+            method="post"
+            class="fps-form"
+          >
+            <div class="field-row">
+              <div class="field">
+                <label>FPS Operator Name</label>
+                <input
+                  name="fpsOperatorName"
+                  type="text"
+                  placeholder="Operator name"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label>Distribution deliveryMonth</label>
+                <input name="deliveryMonth" type="deliveryMonth" required />
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Rice Given (kg)</label>
+                <input
+                  name="dealerRiceKg"
+                  type="number"
+                  min="0"
+                  max="50"
+                  th:value="${selectedBeneficiary.riceKg}"
+                />
+              </div>
+              <div class="field">
+                <label>Wheat Given (kg)</label>
+                <input
+                  name="dealerWheatKg"
+                  type="number"
+                  min="0"
+                  max="50"
+                  th:value="${selectedBeneficiary.wheatKg}"
+                />
+              </div>
+              <div class="field">
+                <label>Sugar Given (kg)</label>
+                <input
+                  name="dealerSugarKg"
+                  type="number"
+                  min="0"
+                  max="10"
+                  th:value="${selectedBeneficiary.sugarKg}"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label>Distribution Status</label>
+              <select name="dealerStatus">
+                <option value="DISTRIBUTED">✅ Fully Distributed</option>
+                <option value="PARTIAL">⚠️ Partial (stock shortage)</option>
+                <option value="NOT_DISTRIBUTED">❌ Not Distributed</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-primary">
+              📲 Record on Blockchain
+            </button>
+          </form>
+        </div>
+        <div
+          th:if="${selectedBeneficiaryId != null and selectedBeneficiary == null}"
+          class="alert alert-err"
+        >
+          Beneficiary ID <span th:text="${selectedBeneficiaryId}"></span> not
+          found.
+        </div>
+      </section>
+
+      <!-- ── Flagged deliveries ── -->
+      <section class="section-card" th:if="${not #lists.isEmpty(flagged)}">
+        <div class="sc-title">🚨 Flagged — Possible Diversion</div>
+        <div th:each="f : ${flagged}" class="fps-flag-row">
+          <div class="ffr-name" th:text="${f.beneficiaryName}">Name</div>
+          <div class="ffr-detail">
+            <span class="ffr-shop" th:text="${f.fpsShopId}">FPS-UP-0001</span>
+            <span th:text="${f.deliveryMonth}">2025-01</span>
+          </div>
+          <div class="ffr-reason" th:text="${f.flagReason}">Mismatch</div>
+          <div class="ffr-status fps-flag">FLAGGED</div>
+        </div>
+      </section>
+
+      <section class="section-card" th:if="${#lists.isEmpty(flagged)}">
+        <div class="sc-title">✅ No Flagged Deliveries</div>
+        <p style="color: #4ade80; padding: 20px 0">
+          All confirmed deliveries match dealer records. No diversion detected.
+        </p>
+      </section>
+
+      <!-- ── Recent distribution ledger ── -->
+      <section class="section-card">
+        <div class="sc-title-row">
+          <div class="sc-title">📒 Distribution Ledger</div>
+          <form
+            action="/fps"
+            method="get"
+            style="display: flex; gap: 8px; align-items: center"
+          >
+            <input
+              name="shopId"
+              type="text"
+              placeholder="Filter by Shop ID"
+              th:value="${shopId}"
+              class="search-input"
+              style="padding: 6px 10px"
+            />
+            <button
+              type="submit"
+              class="btn-secondary"
+              style="padding: 6px 14px"
+            >
+              Filter
+            </button>
+          </form>
+        </div>
+
+        <div class="table-wrap">
+          <table class="ledger-table">
+            <thead>
+              <tr>
+                <th>Beneficiary</th>
+                <th>FPS Shop</th>
+                <th>Month</th>
+                <th>Dealer Gave</th>
+                <th>Dealer Status</th>
+                <th>Flagged</th>
+                <th>Flag Reason</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                th:each="d : ${deliveries}"
+                th:classappend="${d.flagged} ? ' row-ghost' : ''"
+              >
+                <td th:text="${d.beneficiaryName}">Name</td>
+                <td class="mono" th:text="${d.fpsShopId}">FPS-UP-001</td>
+                <td th:text="${d.deliveryMonth}">2025-01</td>
+                <td>
+                  <span
+                    th:text="'🌾 ' + (${d.dealerRiceKg} ?: 0) + 'kg R  ' + (${d.dealerWheatKg} ?: 0) + 'kg W'"
+                  ></span>
+                </td>
+
+                <td>
+                  <span
+                    th:text="${d.dealerStatus}"
+                    th:classappend="${d.dealerStatus == 'DISTRIBUTED'} ? ' status-active' : ' status-ghost'"
+                  >
+                    DISTRIBUTED
+                  </span>
+                </td>
+
+                <td>
+                  <span
+                    th:text="${d.flagged ? '🚨 YES' : '✅ NO'}"
+                    th:classappend="${d.flagged} ? ' text-red' : ' text-green'"
+                    >✅ NO</span
+                  >
+                </td>
+                <td th:text="${d.flagReason != null ? d.flagReason : '—'}" style="font-size:0.75rem; color: #f87171;"></td>
+              </tr>
+              <tr th:if="${#lists.isEmpty(deliveries)}">
+                <td
+                  colspan="6"
+                  style="text-align: center; padding: 24px; color: #6b7280"
+                >
+                  No distribution records yet. Enter a Beneficiary ID above to
+                  record the first distribution.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <th:block th:replace="~{fragments/footer :: footer}" />
+  </body>
+</html>

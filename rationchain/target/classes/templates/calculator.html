@@ -1,0 +1,123 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>AnnaSuraksha — Calculator</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="app-body">
+    <th:block th:replace="~{fragments/nav :: nav}" />
+    <th:block th:replace="~{fragments/nav :: tabs('calculator')}" />
+    <div class="page-wrap">
+      <div class="form-card">
+        <h2 class="form-title">🧮 Entitlement Calculator</h2>
+        <p class="form-sub">
+          Calculate deliveryMonthly ration allocation by category and family
+          size.
+        </p>
+        <form action="/calculator" method="get" class="calc-form">
+          <div class="field-row">
+            <div class="field">
+              <label>Category</label>
+              <select name="category">
+                <option value="">Select category</option>
+                <option
+                  th:each="c : ${categories}"
+                  th:value="${c.code}"
+                  th:text="${c.code + ' — ' + c.label}"
+                  th:selected="${c.code == category}"
+                ></option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Family Size</label>
+              <input
+                name="familySize"
+                type="number"
+                min="1"
+                max="20"
+                th:value="${familySize}"
+                required
+              />
+            </div>
+          </div>
+          <button type="submit" class="btn-primary">Calculate</button>
+        </form>
+
+        <div th:if="${entitlement != null}" class="calc-result">
+          <div
+            class="cr-title"
+            th:text="'deliveryMonthly Entitlement — ' + ${category} + ' · ' + ${familySize} + ' members'"
+          >
+            Result
+          </div>
+          <div class="ent-row-big">
+            <div class="erb-item">
+              <div class="erb-icon">🍚</div>
+              <div class="erb-val" th:text="${entitlement.rice} + ' kg'">
+                0 kg
+              </div>
+              <div class="erb-label">Rice @ ₹3/kg</div>
+            </div>
+            <div class="erb-item" th:if="${entitlement.wheat > 0}">
+              <div class="erb-icon">🌾</div>
+              <div class="erb-val" th:text="${entitlement.wheat} + ' kg'">
+                0 kg
+              </div>
+              <div class="erb-label">Wheat @ ₹2/kg</div>
+            </div>
+            <div class="erb-item" th:if="${entitlement.sugar > 0}">
+              <div class="erb-icon">🍬</div>
+              <div class="erb-val" th:text="${entitlement.sugar} + ' kg'">
+                0 kg
+              </div>
+              <div class="erb-label">Sugar @ ₹13.50/kg</div>
+            </div>
+          </div>
+          <div class="calc-note">
+            Subsidised rates under NFSA 2013. Market value significantly higher.
+            Entitlement cards issued by State PDS authority.
+          </div>
+        </div>
+
+        <!-- Category table -->
+        <div class="cat-table">
+          <div class="ct-title">All Categories — NFSA 2013</div>
+          <div
+            th:each="c : ${categories}"
+            class="ct-row"
+            th:style="'border-left: 3px solid ' + ${c.color}"
+          >
+            <div>
+              <div
+                class="ct-code"
+                th:text="${c.code}"
+                th:style="'color:' + ${c.color}"
+              >
+                BPL
+              </div>
+              <div class="ct-label" th:text="${c.label}">
+                Below Poverty Line
+              </div>
+            </div>
+            <div class="ct-ent">
+              🍚 <span th:text="${c.rice}">5 kg</span>
+              <span th:if="${!c.wheat.equals('0')}">
+                · 🌾 <span th:text="${c.wheat}">3 kg</span></span
+              >
+              <span th:if="${!c.sugar.equals('0')}">
+                · 🍬 <span th:text="${c.sugar}">1 kg</span></span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <th:block th:replace="~{fragments/nav :: footer}" />
+  </body>
+</html>

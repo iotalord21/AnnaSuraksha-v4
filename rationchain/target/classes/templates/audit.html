@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AnnaSuraksha — AI Audit Report</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+</head>
+<body class="app-body">
+<th:block th:replace="~{fragments/nav :: nav}"/>
+<th:block th:replace="~{fragments/nav :: tabs('dashboard')}"/>
+<div class="page-wrap">
+  <a href="/" class="back-link">← Back to Dashboard</a>
+  <div class="audit-card">
+    <div class="audit-header">
+      <div class="ah-icon">🤖</div>
+      <div>
+        <div class="ah-title">Groq AI Audit Report</div>
+        <div class="ah-date" th:text="${report.generatedAt != null ? report.generatedAt.format(fmt) : '—'}">date</div>
+      </div>
+    </div>
+    <div class="audit-stats">
+      <div class="as-item"><div class="as-val" th:text="${report.totalScanned}">0</div><div class="as-label">Scanned</div></div>
+      <div class="as-item red"><div class="as-val red" th:text="${report.ghostsFound}">0</div><div class="as-label">Ghosts</div></div>
+      <div class="as-item green"><div class="as-val green" th:text="${report.verifiedCount}">0</div><div class="as-label">Verified</div></div>
+      <div class="as-item blue"><div class="as-val blue" th:text="${report.migrantCount}">0</div><div class="as-label">ONORC</div></div>
+      <div class="as-item yellow">
+        <div class="as-val yellow">₹<span th:text="${report.estimatedAnnualSavingsRs}">0</span></div>
+        <div class="as-label">Annual Savings</div>
+      </div>
+    </div>
+    <div class="audit-report-body" th:text="${report.aiReport}">Report loading…</div>
+  </div>
+</div>
+<th:block th:replace="~{fragments/nav :: footer}"/>
+</body>
+</html>

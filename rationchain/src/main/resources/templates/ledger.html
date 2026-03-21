@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>AnnaSuraksha — Full Ledger</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+</head>
+<body class="app-body">
+<th:block th:replace="~{fragments/nav :: nav}"/>
+<th:block th:replace="~{fragments/nav :: tabs('ledger')}"/>
+<div th:if="${success}" class="alert alert-ok"  th:text="${success}"></div>
+<div th:if="${error}"   class="alert alert-err" th:text="${error}"></div>
+<div th:if="${warn}"    class="alert alert-warn" th:text="${warn}"></div>
+<div class="page-wrap">
+  <div class="filter-bar">
+    <form action="/ledger" method="get" class="filter-form">
+      <select name="state" onchange="this.form.submit()" class="select-sm">
+        <option value="">All States</option>
+        <option th:each="s : ${states}" th:value="${s.code}" th:text="${s.name}"
+                th:selected="${s.code == selectedState}"></option>
+      </select>
+      <select name="status" onchange="this.form.submit()" class="select-sm">
+        <option value="">All Statuses</option>
+        <option value="ACTIVE"    th:selected="${selectedStatus == 'ACTIVE'}">Active</option>
+        <option value="GHOST"     th:selected="${selectedStatus == 'GHOST'}">Ghosts Only</option>
+        <option value="SUSPENDED" th:selected="${selectedStatus == 'SUSPENDED'}">Suspended</option>
+      </select>
+    </form>
+    <span class="record-count" th:text="${#lists.size(beneficiaries)} + ' records'">0 records</span>
+  </div>
+
+  <div class="table-wrap">
+    <table class="ledger-table">
+      <thead>
+        <tr>
+          <th>Block #</th><th>Hash</th><th>Name</th><th>Aadhaar</th>
+          <th>State</th><th>Category</th><th>Family</th><th>Rice</th>
+          <th>Status</th><th>Registered</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr th:each="b : ${beneficiaries}" th:classappend="${b.status == 'GHOST'} ? ' row-ghost' : ''">
+          <td class="mono"><span class="block-num" th:text="'#' + ${b.blockHeight}">1</span></td>
+          <td class="mono hash-cell"
+              th:text="${b.blockHash != null ? '0x' + b.blockHash.substring(0,6) + '…' : '—'}">0x…</td>
+          <td th:text="${b.fullName}">Name</td>
+          <td class="mono" th:text="${b.maskedAadhaar}">XXXX-XXXX-1234</td>
+          <td><span class="state-badge" th:text="${b.stateCode}">UP</span></td>
+          <td>
+            <span class="cat-badge"
+                  th:text="${b.category}"
+                  th:style="'background:' + ${catColors.getOrDefault(b.category,'#4ade80')} + '20; color:' + ${catColors.getOrDefault(b.category,'#4ade80')}">
+              BPL</span>
+          </td>
+          <td th:text="${b.familySize}">4</td>
+          <td th:text="${b.riceKg} + ' kg'">5 kg</td>
+          <td>
+            <span class="status-badge"
+                  th:text="${b.status}"
+                  th:classappend="${b.status == 'GHOST'} ? ' status-ghost' : ' status-active'">
+              ACTIVE</span>
+          </td>
+          <td th:text="${b.registeredAt != null ? b.registeredAt.format(fmt) : '—'}">Jan 01</td>
+          <td><a th:href="@{/beneficiary/{id}(id=${b.id})}" class="action-link">View →</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<th:block th:replace="~{fragments/nav :: footer}"/>
+</body>
+</html>

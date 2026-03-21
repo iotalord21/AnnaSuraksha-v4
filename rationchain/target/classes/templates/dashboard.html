@@ -1,0 +1,248 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>AnnaSuraksha PDS Ledger</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="app-body">
+    <th:block th:replace="~{fragments/nav :: nav}" />
+    <th:block th:replace="~{fragments/nav :: tabs('dashboard')}" />
+
+    <!-- Flash messages -->
+    <div th:if="${success}" class="alert alert-ok" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-err" th:text="${error}"></div>
+    <div th:if="${warn}" class="alert alert-warn" th:text="${warn}"></div>
+
+    <div class="page-wrap">
+      <!-- ── Stat cards ── -->
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="sc-icon">👨‍👩‍👧‍👦</div>
+          <div class="sc-val" th:text="${stats.total}">0</div>
+          <div class="sc-label">Total Registered</div>
+        </div>
+        <div class="stat-card stat-ok">
+          <div class="sc-icon">✅</div>
+          <div class="sc-val green" th:text="${stats.active}">0</div>
+          <div class="sc-label">Active Beneficiaries</div>
+        </div>
+        <div class="stat-card stat-bad">
+          <div class="sc-icon">👻</div>
+          <div class="sc-val red" th:text="${stats.ghosts}">0</div>
+          <div class="sc-label">Ghosts Detected</div>
+        </div>
+        <div class="stat-card stat-onorc">
+          <div class="sc-icon">🚂</div>
+          <div class="sc-val blue" th:text="${stats.migrants}">0</div>
+          <div class="sc-label">ONORC Migrants</div>
+        </div>
+        <div class="stat-card stat-savings">
+          <div class="sc-icon">💰</div>
+          <div class="sc-val yellow">
+            ₹<span th:text="${deliveryMonthlyLoss}">0</span>
+          </div>
+          <div class="sc-label">deliveryMonthly Savings (if removed)</div>
+        </div>
+        <div
+          class="stat-card"
+          th:classappend="${chainValid} ? ' stat-ok' : ' stat-bad'"
+        >
+          <div class="sc-icon" th:text="${chainValid} ? '🔗' : '⚠️'">🔗</div>
+          <div
+            class="sc-val"
+            th:text="${chainValid} ? 'VALID' : 'BROKEN'"
+            th:classappend="${chainValid} ? ' green' : ' red'"
+          >
+            VALID
+          </div>
+          <div class="sc-label">Chain Integrity</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <!-- ── Supply chain flow ── -->
+        <section class="section-card">
+          <div class="sc-title">🚚 PDS Supply Chain — Live Flow</div>
+          <div class="supply-chain">
+            <div
+              th:each="node, stat : ${supplyChain}"
+              class="supply-node"
+              th:classappend="${stat.last} ? '' : ''"
+            >
+              <div class="sn-icon" th:text="${node.icon}">🏛️</div>
+              <div class="sn-label" th:text="${node.label}">FCI Godown</div>
+              <div class="sn-detail" th:text="${node.detail}">detail</div>
+              <div class="sn-arrow" th:unless="${stat.last}">→</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── State coverage ── -->
+        <section class="section-card">
+          <div class="sc-title">🗺️ State-wise Coverage</div>
+          <div class="state-list">
+            <div th:each="s : ${states}" class="state-row">
+              <span class="sr-name" th:text="${s.name}">State</span>
+              <div class="sr-bar-wrap">
+                <div
+                  class="sr-bar"
+                  th:style="'width:' + ${s.coverage} + '%'"
+                ></div>
+              </div>
+              <span class="sr-pct" th:text="${s.coverage} + '%'">88%</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ── Recent ledger entries ── -->
+      <section class="section-card">
+        <div class="sc-title-row">
+          <div class="sc-title">📒 Recent Ledger Entries</div>
+          <a href="/ledger" class="view-all-link">View full ledger →</a>
+        </div>
+        <div class="table-wrap">
+          <table class="ledger-table">
+            <thead>
+              <tr>
+                <th>Block #</th>
+                <th>Name</th>
+                <th>State</th>
+                <th>Category</th>
+                <th>Hash</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                th:each="b : ${beneficiaries}"
+                th:classappend="${b.status == 'GHOST'} ? ' row-ghost' : ''"
+              >
+                <td class="mono">
+                  <span class="block-num" th:text="'#' + ${b.blockHeight}"
+                    >1</span
+                  >
+                </td>
+                <td th:text="${b.fullName}">Name</td>
+                <td>
+                  <span class="state-badge" th:text="${b.stateCode}">UP</span>
+                </td>
+                <td>
+                  <span
+                    class="cat-badge"
+                    th:text="${b.category}"
+                    th:style="'background:' + ${catColors.getOrDefault(b.category,'#4ade80')} + '20; color:' + ${catColors.getOrDefault(b.category,'#4ade80')}"
+                  >
+                    BPL
+                  </span>
+                </td>
+                <td
+                  class="mono hash-cell"
+                  th:text="${b.blockHash != null ? '0x' + b.blockHash.substring(0,8) + '…' : '—'}"
+                >
+                  0x…
+                </td>
+                <td>
+                  <span
+                    class="status-badge"
+                    th:text="${b.status}"
+                    th:classappend="${b.status == 'GHOST'} ? ' status-ghost' : (${b.status == 'ACTIVE'} ? ' status-active' : ' status-suspended')"
+                  >
+                    ACTIVE
+                  </span>
+                </td>
+                <td>
+                  <a
+                    th:href="@{/beneficiary/{id}(id=${b.id})}"
+                    class="action-link"
+                    >View</a
+                  >
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ── Recent claims ── -->
+      <section class="section-card" th:if="${not #lists.isEmpty(claims)}">
+        <div class="sc-title">⛓️ Recent Blockchain Claims</div>
+        <div class="claims-list">
+          <div th:each="c : ${claims}" class="claim-row">
+            <div class="claim-tx mono" th:text="${c.txHash}">0x…</div>
+            <div class="claim-name" th:text="${c.beneficiaryName}">Name</div>
+            <div class="claim-grain">
+              🍚 <span th:text="${c.riceKg}">5</span>kg
+              <span th:if="${c.wheatKg != null and c.wheatKg > 0}">
+                🌾 <span th:text="${c.wheatKg}">3</span>kg
+              </span>
+            </div>
+            <div
+              class="claim-bio"
+              th:text="${c.biometricStatus}"
+              th:classappend="${'VERIFIED'.equals(c.biometricStatus)} ? ' bio-ok' : ' bio-fail'"
+            >
+              VERIFIED
+            </div>
+            <div
+              class="claim-time"
+              th:text="${c.claimedAt != null ? c.claimedAt.format(fmt) : '—'}"
+            >
+              Jan 01 10:30
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── vs NFS Portal comparison ── -->
+      <section class="section-card compare-card">
+        <div class="sc-title">
+          🆚 AnnaSuraksha vs NFS Portal (Real-World Competitor)
+        </div>
+        <div class="compare-grid">
+          <div class="cmp-head cmp-feature">Feature</div>
+          <div class="cmp-head cmp-us">AnnaSuraksha (Ours)</div>
+          <div class="cmp-head cmp-them">NFS Portal (Govt)</div>
+
+          <div class="cmp-feature">Ghost Detection</div>
+          <div class="cmp-us">✅ 4-layer AI pipeline</div>
+          <div class="cmp-them">❌ Manual audit only</div>
+
+          <div class="cmp-feature">Data Integrity</div>
+          <div class="cmp-us">✅ SHA-256 chain, immutable</div>
+          <div class="cmp-them">⚠️ Centralised DB, editable</div>
+
+          <div class="cmp-feature">ONORC Portability</div>
+          <div class="cmp-us">✅ Real-time cross-state</div>
+          <div class="cmp-them">⚠️ Batch sync, 24h lag</div>
+
+          <div class="cmp-feature">Duplicate Aadhaar</div>
+          <div class="cmp-us">✅ Blocked at registration</div>
+          <div class="cmp-them">❌ 2.5 Cr ghosts in 2022</div>
+
+          <div class="cmp-feature">Audit Trail</div>
+          <div class="cmp-us">✅ Every claim on-chain</div>
+          <div class="cmp-them">⚠️ Log files, deletable</div>
+
+          <div class="cmp-feature">AI Fraud Report</div>
+          <div class="cmp-us">✅ Groq LLM reasoning</div>
+          <div class="cmp-them">❌ None</div>
+        </div>
+        <div class="compare-note">
+          💡 NFS Portal removed 2.5 crore ghost beneficiaries in 2022, saving
+          ₹17,500 Cr/yr — but only via manual audit. AnnaSuraksha automates this
+          continuously.
+        </div>
+      </section>
+    </div>
+
+    <th:block th:replace="~{fragments/nav :: footer}" />
+  </body>
+</html>

@@ -1,0 +1,75 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+  <!-- ── Top navigation ── -->
+  <nav th:fragment="nav" class="topnav">
+    <div class="nav-brand">
+      <span class="nav-icon">⛓️</span>
+      <span class="nav-title">AnnaSuraksha</span>
+      <span class="nav-sub">PDS Ledger</span>
+      <span class="nav-badge">SIMULATED BLOCKCHAIN</span>
+    </div>
+    <div class="nav-right">
+      <form action="/detect-ghosts" method="post" style="display: inline">
+        <button type="submit" class="btn-ghost-detect">🔍 Detect Ghosts</button>
+      </form>
+      <form action="/audit" method="post" style="display: inline">
+        <button type="submit" class="btn-ai-audit">🤖 AI Audit</button>
+      </form>
+    </div>
+  </nav>
+
+  <!-- ── Tab bar ── -->
+  <div th:fragment="tabs(active)" class="tabbar">
+    <a
+      th:href="@{/}"
+      class="tab"
+      th:classappend="${active=='dashboard'}  ? ' active'"
+      >📊 Dashboard</a
+    >
+    <a
+      th:href="@{/ledger}"
+      class="tab"
+      th:classappend="${active=='ledger'}     ? ' active'"
+      >📒 Ledger</a
+    >
+    <a
+      th:href="@{/fps}"
+      class="tab"
+      th:classappend="${active=='fps'}        ? ' active'"
+      >🏪 FPS Dealer</a
+    >
+    <a
+      th:href="@{/register}"
+      class="tab"
+      th:classappend="${active=='register'}   ? ' active'"
+      >➕ Register</a
+    >
+    <a
+      th:href="@{/search}"
+      class="tab"
+      th:classappend="${active=='search'}     ? ' active'"
+      >🔎 Search</a
+    >
+    <a
+      th:href="@{/calculator}"
+      class="tab"
+      th:classappend="${active=='calculator'} ? ' active'"
+      >🧮 Calculator</a
+    >
+    <a
+      th:href="@{/contract}"
+      class="tab"
+      th:classappend="${active=='contract'}   ? ' active'"
+      >📄 Contract</a
+    >
+  </div>
+
+  <!-- ── Footer ── -->
+  <footer th:fragment="footer" class="footer">
+    <span>⛓️ Blockchain Immutable</span>
+    <span>🔒 Aadhaar Hashed</span>
+    <span>🤖 Groq AI Audit</span>
+    <span>🌍 ONORC Cross-State</span>
+    <span>🇮🇳 NFSA 2013 Compliant</span>
+  </footer>
+</html>

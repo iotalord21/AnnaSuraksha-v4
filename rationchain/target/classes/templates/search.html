@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AnnaSuraksha — Search</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+</head>
+<body class="app-body">
+<th:block th:replace="~{fragments/nav :: nav}"/>
+<th:block th:replace="~{fragments/nav :: tabs('search')}"/>
+<div class="page-wrap">
+  <div class="form-card">
+    <h2 class="form-title">🔎 Beneficiary Lookup</h2>
+    <p class="form-sub">Search by last 4 digits of Aadhaar — full number never displayed.</p>
+    <form action="/search" method="get" class="search-form">
+      <div class="search-row">
+        <input name="last4" type="text" placeholder="Last 4 digits of Aadhaar"
+               pattern="[0-9]{4}" maxlength="4" th:value="${last4}"
+               class="search-input" autofocus/>
+        <button type="submit" class="btn-primary">Search</button>
+      </div>
+    </form>
+    <div th:if="${results != null and not #lists.isEmpty(results)}" class="search-results">
+      <div class="sr-count" th:text="${#lists.size(results)} + ' result(s) found'">0</div>
+      <div th:each="b : ${results}" class="history-card"
+           th:style="'border-left-color: ' + ${catColors.getOrDefault(b.category,'#4ade80')}">
+        <div class="hc-top">
+          <div>
+            <div class="hc-crop" th:text="${b.fullName}">Name</div>
+            <div class="hc-disease mono" th:text="${b.maskedAadhaar}">XXXX-XXXX-1234</div>
+          </div>
+          <div class="hc-right">
+            <div class="cat-badge"
+                 th:text="${b.category}"
+                 th:style="'background:' + ${catColors.getOrDefault(b.category,'#4ade80')} + '20; color:' + ${catColors.getOrDefault(b.category,'#4ade80')}">
+              BPL</div>
+            <div class="status-badge mt-4"
+                 th:text="${b.status}"
+                 th:classappend="${b.status == 'GHOST'} ? ' status-ghost' : ' status-active'">
+              ACTIVE</div>
+          </div>
+        </div>
+        <div class="hc-meta">
+          <span class="state-badge" th:text="${b.stateCode}">UP</span>
+          <span th:text="'👨‍👩‍👧 ' + ${b.familySize} + ' members'">4 members</span>
+          <a th:href="@{/beneficiary/{id}(id=${b.id})}" class="hc-view-link">View →</a>
+        </div>
+      </div>
+    </div>
+    <div th:if="${last4 != null and #lists.isEmpty(results)}" class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <p>No beneficiary found with Aadhaar ending in <strong th:text="${last4}">0000</strong></p>
+    </div>
+  </div>
+</div>
+<th:block th:replace="~{fragments/nav :: footer}"/>
+</body>
+</html>

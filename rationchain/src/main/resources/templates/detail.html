@@ -1,0 +1,189 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>AnnaSuraksha — Beneficiary Detail</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="app-body">
+    <th:block th:replace="~{fragments/nav :: nav}" />
+    <th:block th:replace="~{fragments/nav :: tabs('ledger')}" />
+    <div th:if="${success}" class="alert alert-ok" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-err" th:text="${error}"></div>
+    <div class="page-wrap">
+      <a href="/ledger" class="back-link">← Back to Ledger</a>
+
+      <!-- Profile card -->
+      <div
+        class="detail-card"
+        th:style="'border-left: 4px solid ' + ${catColors.getOrDefault(b.category,'#4ade80')}"
+      >
+        <div class="dc-top">
+          <div>
+            <div class="dc-name" th:text="${b.fullName}">Name</div>
+            <div class="dc-meta">
+              <span class="state-badge" th:text="${b.stateCode}">UP</span>
+              <span
+                class="cat-badge"
+                th:text="${b.category}"
+                th:style="'background:' + ${catColors.getOrDefault(b.category,'#4ade80')} + '20; color:' + ${catColors.getOrDefault(b.category,'#4ade80')}"
+              >
+                BPL</span
+              >
+              <span th:if="${b.migrant}" class="migrant-badge"
+                >🚂 ONORC Migrant</span
+              >
+            </div>
+          </div>
+          <div class="dc-status">
+            <span
+              class="status-badge"
+              th:text="${b.status}"
+              th:classappend="${b.status == 'GHOST'} ? ' status-ghost' : ' status-active'"
+            >
+              ACTIVE</span
+            >
+          </div>
+        </div>
+
+        <!-- Ghost reason -->
+        <div th:if="${b.ghostReason != null}" class="ghost-reason">
+          <span class="gr-layer" th:text="${b.ghostLayer}">LAYER_1</span>
+          <span th:text="${b.ghostReason}">reason</span>
+        </div>
+
+        <!-- Stats row -->
+        <div class="detail-stats">
+          <div class="ds-item">
+            <div class="ds-label">Aadhaar</div>
+            <div class="ds-val mono" th:text="${b.maskedAadhaar}">
+              XXXX-XXXX-1234
+            </div>
+          </div>
+          <div class="ds-item">
+            <div class="ds-label">FPS Shop</div>
+            <div class="ds-val mono" th:text="${b.fpsShopId}">FPS-UP-0042</div>
+          </div>
+          <div class="ds-item">
+            <div class="ds-label">Family Size</div>
+            <div class="ds-val" th:text="${b.familySize}">4</div>
+          </div>
+          <div class="ds-item">
+            <div class="ds-label">Claims Made</div>
+            <div class="ds-val" th:text="${b.claimCount}">3</div>
+          </div>
+        </div>
+
+        <!-- Entitlement row -->
+        <div class="entitlement-row">
+          <div class="ent-item">
+            <div class="ent-icon">🍚</div>
+            <div class="ent-val" th:text="${b.riceKg} + ' kg'">5 kg</div>
+            <div class="ent-label">Rice/deliveryMonth</div>
+          </div>
+          <div class="ent-item" th:if="${b.wheatKg != null and b.wheatKg > 0}">
+            <div class="ent-icon">🌾</div>
+            <div class="ent-val" th:text="${b.wheatKg} + ' kg'">3 kg</div>
+            <div class="ent-label">Wheat/deliveryMonth</div>
+          </div>
+          <div class="ent-item" th:if="${b.sugarKg != null and b.sugarKg > 0}">
+            <div class="ent-icon">🍬</div>
+            <div class="ent-val" th:text="${b.sugarKg} + ' kg'">1 kg</div>
+            <div class="ent-label">Sugar/deliveryMonth</div>
+          </div>
+          <div
+            class="ent-item"
+            th:if="${b.keroseneL != null and b.keroseneL > 0}"
+          >
+            <div class="ent-icon">🔥</div>
+            <div class="ent-val" th:text="${b.keroseneL} + ' L'">3 L</div>
+            <div class="ent-label">Kerosene</div>
+          </div>
+        </div>
+
+        <!-- Block info -->
+        <div class="block-info">
+          <div class="bi-row">
+            <span class="bi-label">Block Height</span>
+            <span class="bi-val mono" th:text="'#' + ${b.blockHeight}">1</span>
+          </div>
+          <div class="bi-row">
+            <span class="bi-label">Block Hash</span>
+            <span class="bi-val mono" th:text="${shortHash}">0x…</span>
+          </div>
+          <div class="bi-row">
+            <span class="bi-label">Registered</span>
+            <span
+              class="bi-val"
+              th:text="${b.registeredAt != null ? b.registeredAt.format(fmt) : '—'}"
+              >Jan 01</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Record claim -->
+      <div class="section-card" th:if="${b.status == 'ACTIVE'}">
+        <div class="sc-title">📥 Record deliveryMonthly Claim</div>
+        <form
+          th:action="@{/claim/{id}(id=${b.id})}"
+          method="post"
+          class="claim-form"
+        >
+          <div class="field-row">
+            <div class="field">
+              <label>Claim State (ONORC — leave blank for home state)</label>
+              <input
+                name="claimState"
+                type="text"
+                placeholder="e.g. MH"
+                maxlength="2"
+              />
+            </div>
+            <div class="field">
+              <label>Biometric</label>
+              <select name="biometric">
+                <option value="true">✅ Verified</option>
+                <option value="false">❌ Failed</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn-primary">
+            ⛓️ Record Claim on Blockchain
+          </button>
+        </form>
+      </div>
+
+      <!-- Claim history -->
+      <div class="section-card" th:if="${not #lists.isEmpty(claims)}">
+        <div class="sc-title">⛓️ Claim History</div>
+        <div th:each="c : ${claims}" class="claim-row">
+          <div class="claim-tx mono" th:text="${c.txHash}">0x…</div>
+          <div class="claim-grain">
+            🍚 <span th:text="${c.riceKg}">5</span>kg
+          </div>
+          <div
+            class="claim-bio"
+            th:text="${c.biometricStatus}"
+            th:classappend="${'VERIFIED'.equals(c.biometricStatus)} ? ' bio-ok' : ' bio-fail'"
+          >
+            VERIFIED
+          </div>
+          <div class="claim-state" th:text="${c.claimStateCode}">UP</div>
+          <div
+            class="claim-time"
+            th:text="${c.claimedAt != null ? c.claimedAt.format(fmt) : '—'}"
+          >
+            Jan 01
+          </div>
+        </div>
+      </div>
+    </div>
+    <th:block th:replace="~{fragments/nav :: footer}" />
+  </body>
+</html>

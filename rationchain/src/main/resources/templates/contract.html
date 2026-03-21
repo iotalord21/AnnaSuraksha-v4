@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AnnaSuraksha — Smart Contract</title>
+<link rel="stylesheet" th:href="@{/css/app.css}"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Noto+Sans:wght@400;700;800&display=swap" rel="stylesheet"/>
+</head>
+<body class="app-body">
+<th:block th:replace="~{fragments/nav :: nav}"/>
+<th:block th:replace="~{fragments/nav :: tabs('contract')}"/>
+<div class="page-wrap">
+  <div class="contract-tabs">
+    <div class="ct-tab ct-active">📄 Solidity Contract</div>
+    <div class="ct-tab-sub">Python Ghost Detector</div>
+  </div>
+
+  <div class="code-meta">
+    <span>RationLedger.sol · Solidity 0.8.24 · OpenZeppelin AccessControl + EIP-712</span>
+    <span>Deploy: <code class="inline-code">npx hardhat deploy --network polygon_amoy</code></span>
+  </div>
+  <pre class="code-block sol-code" th:text="${solidityCode}">Solidity</pre>
+
+  <div class="code-meta" style="margin-top:24px">
+    <span>ghost_detector.py · 4-layer detection · Anthropic Claude + IsolationForest + River</span>
+  </div>
+  <pre class="code-block py-code" th:text="${pythonGhost}">Python</pre>
+</div>
+<th:block th:replace="~{fragments/nav :: footer}"/>
+</body>
+</html>

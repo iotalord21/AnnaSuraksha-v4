@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Confirm — AnnaSuraksha</title>
+  <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</head>
+<body class="app-body">
+<th:block th:replace="~{fragments/nav :: nav}"/>
+<div class="page-wrap" style="max-width:520px;margin:60px auto;text-align:center">
+  <div class="section-card">
+    <div style="font-size:48px;margin-bottom:16px">🔍</div>
+    <h2 th:text="${title}">Confirm Action</h2>
+    <p th:text="${message}" style="color:#6b7280;margin:16px 0">Are you sure?</p>
+    <div style="display:flex;gap:12px;justify-content:center;margin-top:24px">
+      <form th:action="${actionUrl}" method="post">
+        <button type="submit" class="btn-primary">✅ Yes, Proceed</button>
+      </form>
+      <a th:href="${cancelUrl}" class="btn-secondary">Cancel</a>
+    </div>
+  </div>
+</div>
+<th:block th:replace="~{fragments/footer :: footer}"/>
+</body>
+</html>
