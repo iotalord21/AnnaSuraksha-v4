@@ -1,0 +1,3 @@
+Sequence Diagram:
+
+User -> API -> Service -> Fraud Engine -> Decision -> Alert Service -> Audit Log
